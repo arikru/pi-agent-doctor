@@ -1,6 +1,6 @@
 {
   "name": "pi-agent-doctor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Pi extension for connecting to Pydantic AI diagnostic agents and exporting diagnostic traces.",
   "type": "module",
   "license": "MIT",
@@ -21,6 +21,7 @@
   "homepage": "https://github.com/arikru/pi-agent-doctor#readme",
   "files": [
     "extensions",
+    "python",
     "README.md",
     "LICENSE"
   ],

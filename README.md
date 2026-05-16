@@ -30,13 +30,14 @@ pi -e ./
 
 ## What this package includes
 
-This package installs one Pi extension:
+This package installs one Pi extension and bundles a reusable Python adapter:
 
 ```text
 extensions/pydantic-diagnostics.ts
+python/pi_agent_doctor/
 ```
 
-It does **not** start or install a Python/Pydantic AI server. You need to run a compatible diagnostic agent endpoint separately and point the extension at it.
+The bundled Python adapter can wrap your own Pydantic AI agents and expose the HTTP shape consumed by the Pi extension. The Pi extension does **not** automatically start your Python process; you still run the adapter server next to the agent you want to inspect.
 
 By default the extension uses:
 
@@ -66,6 +67,8 @@ After installing/loading the package, these commands are available in Pi:
 | `/agent-last-trace` | Show the most recent diagnostic trace as a Pi widget. |
 | `/agent-clear-trace` | Hide the diagnostic trace widget. |
 | `/agent-report [path.html]` | Export stored diagnostic runs from the current Pi session as an HTML report. |
+| `/agent-doctor-adapter` | Show the bundled Python adapter path and usage. |
+| `/agent-doctor-init [path.py]` | Write a starter FastAPI bridge that imports the bundled Python adapter. |
 
 ## Example usage
 
@@ -99,6 +102,66 @@ Export a report:
 
 ```text
 /agent-report doctor-report.html
+```
+
+## Built-in Pydantic AI adapter
+
+`pi-agent-doctor` now includes the Python adapter as a built-in package resource under `python/pi_agent_doctor`.
+
+From inside Pi, write a starter server into your current project:
+
+```text
+/agent-doctor-init agent_doctor_server.py
+```
+
+The generated file imports the adapter from the installed Pi package path and contains a smoke-test `TestModel` agent. Install the Python runtime dependencies and run it:
+
+```bash
+pip install "pydantic-ai-slim>=1.97.0" "fastapi>=0.136.1" "uvicorn>=0.47.0"
+uvicorn agent_doctor_server:app --host 127.0.0.1 --port 8765
+```
+
+If you prefer to install the adapter as a normal Python package instead of importing it from the Pi package path, use:
+
+```bash
+pip install "pi-agent-doctor-adapter[server] @ git+https://github.com/arikru/pi-agent-doctor.git@v0.2.0#subdirectory=python"
+```
+
+From a local checkout, use:
+
+```bash
+pip install -e "./python[server]"
+```
+
+Minimal bridge for your own agent:
+
+```python
+from pi_agent_doctor.fastapi_adapter import create_app
+from my_agent import build_agent
+
+app = create_app({"default": build_agent})
+```
+
+Then connect Pi:
+
+```text
+/agent-connect default http://127.0.0.1:8765
+/agent-debug hello
+```
+
+For multiple agents:
+
+```python
+app = create_app({
+    "default": build_default_agent,
+    "orders": build_order_agent,
+})
+```
+
+Pi can connect to the named route:
+
+```text
+/agent-connect orders http://127.0.0.1:8765/orders
 ```
 
 ## Expected HTTP endpoint
@@ -165,6 +228,11 @@ Streaming responses can emit SSE `data:` records or NDJSON records. Each record 
 .
 ├── extensions/
 │   └── pydantic-diagnostics.ts
+├── python/
+│   ├── pyproject.toml
+│   └── pi_agent_doctor/
+│       ├── pydantic_adapter.py
+│       └── fastapi_adapter.py
 ├── package.json
 ├── README.md
 └── LICENSE
