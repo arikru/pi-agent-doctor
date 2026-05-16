@@ -1,0 +1,39 @@
+{
+  "name": "pi-agent-doctor",
+  "version": "0.1.0",
+  "description": "Pi extension for connecting to Pydantic AI diagnostic agents and exporting diagnostic traces.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "pydantic-ai",
+    "diagnostics",
+    "agent"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arikru/pi-agent-doctor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/arikru/pi-agent-doctor/issues"
+  },
+  "homepage": "https://github.com/arikru/pi-agent-doctor#readme",
+  "files": [
+    "extensions",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "pack:dry-run": "npm pack --dry-run",
+    "check": "npm run pack:dry-run"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "pi": {
+    "extensions": [
+      "./extensions/pydantic-diagnostics.ts"
+    ]
+  }
+}
