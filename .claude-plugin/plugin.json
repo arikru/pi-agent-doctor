@@ -1,0 +1,21 @@
+{
+  "name": "agent-doctor",
+  "displayName": "Agent Doctor",
+  "version": "0.3.0",
+  "description": "Connect to Pydantic AI diagnostic agents over the pi-agent-doctor HTTP protocol, inspect traces and registered tools, and export HTML diagnostic reports.",
+  "author": {
+    "name": "arikru",
+    "url": "https://github.com/arikru"
+  },
+  "repository": "https://github.com/arikru/pi-agent-doctor",
+  "license": "MIT",
+  "keywords": ["pydantic-ai", "diagnostics", "agent", "mcp"],
+  "commands": ["./commands/"],
+  "mcpServers": {
+    "agent-doctor": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/server.js"]
+    }
+  }
+}

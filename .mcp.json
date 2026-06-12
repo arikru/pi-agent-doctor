@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "agent-doctor": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CLAUDE_PROJECT_DIR}/mcp/server.js"]
+    }
+  }
+}

@@ -1,10 +1,10 @@
 # pi-agent-doctor
 
-A sharable [Pi](https://pi.dev) package that adds diagnostic-agent commands to Pi.
+A sharable [Pi](https://pi.dev) package — and a [Claude Code](https://claude.com/claude-code) plugin — that adds diagnostic-agent commands to your coding agent.
 
-`pi-agent-doctor` lets Pi talk to an HTTP diagnostic adapter for Pydantic AI agents, stream trace events into the Pi UI, persist run records in the Pi session, and export HTML diagnostic reports.
+`pi-agent-doctor` talks to an HTTP diagnostic adapter for Pydantic AI agents, streams trace events into the host UI, records runs, and exports HTML diagnostic reports. Both hosts share the same protocol implementation (`lib/diagnostic-core.js`); see `docs/adr/0001` for the protocol decision.
 
-> Security note: Pi extensions run with your full local user permissions. Review extension code before installing any Pi package.
+> Security note: Pi extensions and MCP servers run with your full local user permissions. Review the code before installing any package.
 
 ## Install
 
@@ -103,6 +103,59 @@ Export a report:
 ```text
 /agent-report doctor-report.html
 ```
+
+## Using with Claude Code
+
+The same package doubles as a Claude Code plugin (`agent-doctor`). It ships a zero-dependency MCP server (`mcp/server.js`, Node.js >= 18) that exposes the diagnostic protocol as MCP tools, plus slash commands that mirror the Pi commands.
+
+### Install as a plugin
+
+In Claude Code:
+
+```text
+/plugin marketplace add arikru/pi-agent-doctor
+/plugin install agent-doctor@pi-agent-doctor
+```
+
+Or load it for one session from a local checkout:
+
+```bash
+claude --plugin-dir /path/to/pi-agent-doctor
+```
+
+### Install just the MCP server
+
+Without the plugin, register the server directly:
+
+```bash
+claude mcp add --transport stdio agent-doctor -- node /path/to/pi-agent-doctor/mcp/server.js
+```
+
+(A project-scoped `.mcp.json` doing the same ships in this repo.)
+
+### Claude Code slash commands
+
+Plugin commands are namespaced under the plugin name:
+
+| Command | Purpose |
+| --- | --- |
+| `/agent-doctor:agent <prompt>` | Send a prompt to the active diagnostic agent. |
+| `/agent-doctor:agent-debug <prompt>` | One traced run without changing the diagnostics mode. |
+| `/agent-doctor:diag on\|off\|status` | Control diagnostics for subsequent runs. |
+| `/agent-doctor:agent-connect <name> <base-url>` | Register/connect a named agent endpoint. |
+| `/agent-doctor:agent-use <name>` | Select the active agent. |
+| `/agent-doctor:agent-disconnect <name>` | Remove a named agent endpoint. |
+| `/agent-doctor:agents` | List configured agents. |
+| `/agent-doctor:agent-last-trace` | Show the most recent diagnostic trace. |
+| `/agent-doctor:agent-report [path.html]` | Export this session's runs as an HTML report. |
+| `/agent-doctor:agent-doctor-adapter` | Show the bundled Python adapter path and usage. |
+| `/agent-doctor:agent-doctor-init [path.py]` | Write a starter FastAPI bridge. |
+
+### MCP tools
+
+Claude can also call the tools directly (e.g. when you ask it to "debug the orders agent"): `agent_prompt`, `agent_connect`, `agent_use`, `agent_disconnect`, `agent_list`, `diagnostics_mode`, `agent_last_trace`, `agent_report`, `adapter_info`, `adapter_init`.
+
+The MCP server reads `PYDANTIC_AGENT_URL` for the default endpoint and persists connected agents and the diagnostics mode to `~/.config/pi-agent-doctor/mcp-state.json`, so connections survive Claude Code restarts. Run records live in memory for the current session; export them with `agent_report` before quitting.
 
 ## Built-in Pydantic AI adapter
 
@@ -226,13 +279,23 @@ Streaming responses can emit SSE `data:` records or NDJSON records. Each record 
 
 ```text
 .
+├── .claude-plugin/
+│   ├── plugin.json            # Claude Code plugin manifest (incl. MCP server)
+│   └── marketplace.json       # lets this repo act as its own plugin marketplace
+├── commands/                  # Claude Code slash commands (/agent-doctor:*)
 ├── extensions/
-│   └── pydantic-diagnostics.ts
+│   └── pydantic-diagnostics.ts  # Pi extension (front-end over lib/)
+├── lib/
+│   ├── diagnostic-core.js     # shared protocol client + trace/report rendering
+│   └── diagnostic-core.d.ts
+├── mcp/
+│   └── server.js              # zero-dependency stdio MCP server for Claude Code
 ├── python/
 │   ├── pyproject.toml
 │   └── pi_agent_doctor/
 │       ├── pydantic_adapter.py
 │       └── fastapi_adapter.py
+├── .mcp.json                  # project-scoped MCP config for local development
 ├── package.json
 ├── README.md
 └── LICENSE

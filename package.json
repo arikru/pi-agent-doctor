@@ -1,12 +1,14 @@
 {
   "name": "pi-agent-doctor",
-  "version": "0.2.0",
-  "description": "Pi extension for connecting to Pydantic AI diagnostic agents and exporting diagnostic traces.",
+  "version": "0.3.0",
+  "description": "Pi extension and Claude Code plugin for connecting to Pydantic AI diagnostic agents and exporting diagnostic traces.",
   "type": "module",
   "license": "MIT",
   "keywords": [
     "pi-package",
     "pi-extension",
+    "claude-code-plugin",
+    "mcp",
     "pydantic-ai",
     "diagnostics",
     "agent"
@@ -21,6 +23,10 @@
   "homepage": "https://github.com/arikru/pi-agent-doctor#readme",
   "files": [
     "extensions",
+    "lib",
+    "mcp",
+    "commands",
+    ".claude-plugin",
     "python",
     "README.md",
     "LICENSE"

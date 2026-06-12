@@ -1,0 +1,16 @@
+{
+  "name": "pi-agent-doctor",
+  "owner": {
+    "name": "arikru"
+  },
+  "description": "Marketplace for the agent-doctor plugin (Pydantic AI diagnostic agents in Claude Code).",
+  "plugins": [
+    {
+      "name": "agent-doctor",
+      "source": "./",
+      "description": "Connect to Pydantic AI diagnostic agents, inspect traces and registered tools, and export HTML diagnostic reports.",
+      "category": "debugging",
+      "tags": ["pydantic-ai", "diagnostics", "agent"]
+    }
+  ]
+}
